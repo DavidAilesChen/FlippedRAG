@@ -34,14 +34,12 @@ We focus on exploiting the reliability flaws of the retriever to manipulate the 
 
 If you find this work useful, please cite:
 ```
-@misc{chen2025flippedragblackboxopinionmanipulation,
-      title={FlippedRAG: Black-Box Opinion Manipulation Adversarial Attacks to Retrieval-Augmented Generation Models}, 
-      author={Zhuo Chen and Jiawei Liu and Yuyang Gong and Miaokun Chen and Haotan Liu and Qikai Cheng and Fan Zhang and Wei Lu and Xiaozhong Liu and Xiaofeng Wang},
-      year={2025},
-      eprint={2501.02968},
-      archivePrefix={arXiv},
-      primaryClass={cs.IR},
-      url={https://arxiv.org/abs/2501.02968}, 
+@inproceedings{chen2025flippedrag,
+  title={Flippedrag: Black-box opinion manipulation adversarial attacks to retrieval-augmented generation models},
+  author={Chen, Zhuo and Gong, Yuyang and Liu, Jiawei and Chen, Miaokun and Liu, Haotan and Cheng, Qikai and Zhang, Fan and Lu, Wei and Liu, Xiaozhong},
+  booktitle={Proceedings of the 2025 ACM SIGSAC Conference on Computer and Communications Security},
+  pages={4109--4123},
+  year={2025}
 }
 ```
 
