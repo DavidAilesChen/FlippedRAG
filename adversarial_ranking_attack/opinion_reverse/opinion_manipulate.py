@@ -46,7 +46,7 @@ BERT_LM_MODEL_DIR = model_dir+'/bert/'
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device_cpu = torch.device("cpu")
-# 参数
+
 parser = argparse.ArgumentParser('Pytorch')
 parser.add_argument("--data_name", default='fnc', type=str)
 parser.add_argument("--max_seq_len", default=256, type=int)
@@ -54,7 +54,7 @@ parser.add_argument("--target", type=str, default='bge', help='test on what mode
 parser.add_argument('--eval_on_other', default=True ,type=bool, help='Decide whether evaluate triggers on other models')
 parser.add_argument("--polarity", type=int, default=0, help='target polarity.')
 parser.add_argument("--batch_size", default=16, type=int)
-parser.add_argument("--nsp_model", default="/public/home/lab6/chenzhuo/model_hub_belonging_to_cz/bert-base-uncased", type=str, required=False, help="Bert model to use (cross-encoder/ms-marco-MiniLM-L-12-v2,bert-base-uncased).")
+parser.add_argument("--nsp_model", default="/bert-base-uncased", type=str, required=False, help="Bert model to use (cross-encoder/ms-marco-MiniLM-L-12-v2,bert-base-uncased).")
 parser.add_argument("--transformer_model", default="NBbert-for-adversarial", type=str, required=False, help="Bert model to use (cross-encoder/ms-marco-MiniLM-L-12-v2,bert-base-uncased).")
 parser.add_argument('--stemp', type=float, default=1.0, help='temperature of softmax')
 parser.add_argument('--lr', type=float, default=0.1, help='optimization step size')
@@ -90,8 +90,6 @@ args = parser.parse_args()
 
 def main():
     args.query_plus = True
-    print("SAVE:", args.save)
-    print("BATCH SPLIT:", args.batch_split)
 
     if args.target == "bge":
         tokenizer = AutoTokenizer.from_pretrained("BAAI/bge-m3")
@@ -140,17 +138,8 @@ def main():
         else:
             target_model = CondenserForPairwiseModel_msmarco.from_pretrained(model_dir+'/msmarco-bert-co-condensor/')
             # gen_model = pairwise_NB_bert_classifier.NBBERTForPairwiseClassfy.from_pretrained("nboost/pt-bert-base-uncased-msmarco")
-    # target_model.load_state_dict(torch.load(args.model_path), strict=False)
-    # model_rank.to(device)
-    # model_rank = amp.initialize(model_rank, opt_level='O1')
+
     target_model.to(device)
-    # if args.target != "bge":
-    #     target_model = amp.initialize(target_model, opt_level='O1')
-    #     # pass
-    #     # gen_model.to(device)
-    #     # gen_model = amp.initialize(gen_model, opt_level='O1')
-    # else:
-    #     target_model.encoder.model = amp.initialize(target_model.encoder.model, opt_level='O1')
 
     if args.target != "bge":
         lm_model = BertForLM.from_pretrained(args.lm_model_dir)
@@ -199,11 +188,7 @@ def main():
     passage_nums = []
     trigger_saves = {}
     passage_num = 0
-    #GOVERMENT:2(14),14(54),18(21), 20(29),21(41),23(38),30(27), 37(64);[2,14,18,20,21,23,30,37,40,43,57,58,61,]
-    #EDUCATION:3(19),6(19),13(42),15(15),32(21),39(24),64(45);[3, 6, 15]:[3,6,13,15,32,39,64,]
-    #SOCIETY:9(33),22(41),33(33), 38(44),42(16), 53(23);[9,22,33,38,42,53,]
-    #HEALTH:0 ,10 ,44 ,49 ,51 ,56;[0,10,44,45,46,49,51,56,60,]
-    # [0, 1, 2, 3,4,5,6,7,8, 9, 10, 11, 12, 13, 14, 15] ; [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, ][16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, ]
+
     for i in tqdm([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, ]):
         print("NUMBER:", i)
         # origin_stance_list = data[queries_list[i]]
@@ -269,7 +254,6 @@ def main():
         if args.eval_on_other:
             print("EVAL_SINGLE:")
             result_eval_other = topk_proportion(sorted_label_eval, sorted_label_eval_attacked, args)
-            print("######")
             eval_result_list.append(result_eval_other)
             AVG_BOOST_eval, SUM_BOOST_eval, NUM_eval = avg_rank_boost(sorted_label_eval, sorted_label_eval_attacked, args)
             eval_boost_rank.append(SUM_BOOST_eval)
@@ -386,10 +370,6 @@ def main():
     AVG_6MUTUAL_SCORE = AVG_6MUTUAL_SCORE/len(result_list)
     AVG_RECALL = AVG_RECALL/len(result_list)
     print("Average passage number:", passage_num/len(result_list))
-    # print("AVG_ORI_TOP3:", AVG_ORI_TOP5)
-    # print("AVG_ORI_TOP6:", AVG_ORI_TOP10)
-    # print("AVG_TOP3_RATE:", AVG_TOP5_RATE)
-    # print("AVG_TOP6_RATE:", AVG_TOP10_RATE)
     print("AVG_BOOST_RANK:", AVG_BOOST_RANK/(passage_num/len(result_list)))
     print("AVG_3BOOST_RATE:", AVG_5BOOST_RATE)
     print("AVG_6BOOST_RATE:", AVG_10BOOST_RATE)
