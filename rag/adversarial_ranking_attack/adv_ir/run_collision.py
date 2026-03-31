@@ -11,7 +11,7 @@ from torch import true_divide
 curdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(curdir))
 prodir = os.path.dirname(curdir)
-prodir = '/data_2/chenzhuo/adversarial_ranking_attack/bert_ranker/results'#可修改
+prodir = '/data_2/chenzhuo/adversarial_ranking_attack/bert_ranker/results'
 prodir2 = "/data_share/chenzhuo/adversarial_data/results"
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -239,12 +239,10 @@ def gen_collision(args, tokenizer):
 
         print(msg)
         logger.info(msg)
-        #注意这里gen_collision进行的评估是不准确的，其new_score指的是相关性度量，而不是经过目标模型得到的结果，但生成对比的old_scores是目标模型给出的结果
         if args.verbose:
             logger.info('---Rank shifts for less relevant documents---')
             for did in target_q_passage[qid]:
                 old_rank, old_score, label = target_q_passage[qid][did]
-                # 二分查找，返回位置索引
                 new_rank = len(old_scores) - bisect.bisect_left(old_scores, new_score)
                 
                 total_docs_cnt += 1
@@ -300,8 +298,6 @@ def test_conllision(args):
                                                                                                     data_name='dl',
                                                                                                     top_k=10,
                                                                                                     least_num=5)
-    #target_q_passage:query对应passage的分数与排名【[qid][pid]：（rank, score）】；query_scores:每个query对应的若干个passage的排名得分，有顺序
-    #best_query_sent：query对应最高分的passage；
     if args.target == 'mini':
         tokenizer = AutoTokenizer.from_pretrained("cross-encoder/ms-marco-MiniLM-L-12-v2")
         model = AutoModelForSequenceClassification.from_pretrained("cross-encoder/ms-marco-MiniLM-L-12-v2")
@@ -401,11 +397,10 @@ def test_conllision(args):
                 print("New high score: {:.4f}".format(new_score))
                 print("Trigger: {}".format(trigger))
 
-                # 二分查找，返回位置索引
                 new_rank = len(old_scores) - bisect.bisect_left(old_scores, tmp_best_new_score)
 
                 total_docs_cnt += 1
-                boost_rank_list.append(old_rank - new_rank)#提升/变化能力
+                boost_rank_list.append(old_rank - new_rank)
                 if old_rank > new_rank:
                     success_cnt += 1
                     if new_rank <= 500:
@@ -443,7 +438,7 @@ def test_conllision(args):
     print("Collision Results:\t10\t20\t50\t100\t500\tSucc\tAvg-Boost\n")
     print("Collision Results:\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(less_10_rate, less_20_rate, less_50_rate, less_100_rate, less_500_rate, boost_success_rate, avg_boost_rank))
 
-def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_collision中的测试，因为那里面未考虑passage
+def test_conllision_ranking(args, tokenizer):
     print("args::", args)
     print('Test all triggers on imitation model...')
     # load victim models results
@@ -452,8 +447,6 @@ def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_co
                                                                                                     top_k=10,
                                                                                                     least_num=5,
                                                                                                     target_type=args.target_type)
-    #target_q_passage:query对应passage的分数与排名【[qid][pid]：（rank, score）】；query_scores:每个query对应的若干个passage的排名得分，有顺序
-    #best_query_sent：query对应最高分的passage；
     if args.target == 'mini':
         tokenizer = AutoTokenizer.from_pretrained("cross-encoder/ms-marco-MiniLM-L-12-v2")
         model = AutoModelForSequenceClassification.from_pretrained("cross-encoder/ms-marco-MiniLM-L-12-v2")
@@ -507,7 +500,7 @@ def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_co
             query = queries[qid]
             best = best_query_sent[qid]
             best_sent = best[1]
-            old_scores = query_scores[qid][::-1]#[::-1]表示倒序输出
+            old_scores = query_scores[qid][::-1]
 
             trigger = q_trigger_dict[qid]
             for did in target_q_passage[qid]:
@@ -521,7 +514,7 @@ def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_co
                 # tail
                 # triggered_passage = passages_dict[did] + ' ' + trigger
                 #half_len_passage = int(len(passages_dict[did]) / 2)
-                #triggered_passage = passages_dict[did][:half_len_passage] + ' ' + trigger + ' ' + passages_dict[did][half_len_passage:]#注意：中间插入trigger
+                #triggered_passage = passages_dict[did][:half_len_passage] + ' ' + trigger + ' ' + passages_dict[did][half_len_passage:]
                               
                 batch_encoding = tokenizer([[query, triggered_passage]], max_length=256, padding="max_length", truncation=True, return_tensors='pt')
                 
@@ -578,12 +571,11 @@ def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_co
                 print("New high score: {:.4f}".format(new_score))
                 print("Trigger: {}".format(trigger))
 
-                # 二分查找，返回位置索引
                 new_rank = len(old_scores) - bisect.bisect_left(old_scores, tmp_best_new_score)
                 #rank_list.append(new_rank)
 
                 total_docs_cnt += 1
-                boost_rank_list.append(old_rank - new_rank)#提升/变化能力
+                boost_rank_list.append(old_rank - new_rank)
                 if old_rank > new_rank:
                     success_cnt += 1
                     if new_rank <= 500:
@@ -601,7 +593,6 @@ def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_co
                             f'old score={raw_score:.4f}, new score={tmp_best_new_score:.4f}, old rank={old_rank}, new rank={new_rank}')
             print('\n\n')
     
-    #排序结果评估（创写chenzhuo)
     target_q_passage_all, query_scores_all, best_query_sent_all, queries_all, passages_dict_all = prepare_data_and_scores(target_name=args.target,
                                                                                                     data_name='dl',
                                                                                                     top_k=10,
@@ -761,8 +752,3 @@ def test_conllision_ranking(args, tokenizer):#重排序,为什么不参考gen_co
 
 if __name__ == '__main__':
     main()
-
-#python3 /data_2/chenzhuo/adversarial_ranking_attack/adv_ir/run_collision.py --mode=train --nature --regularize --target=mini_adv --amount=500 --target_type=none --method 
-#python3 /data_2/chenzhuo/adversarial_ranking_attack/adv_ir/run_collision.py --mode=train --target=mini_adv --amount=1000 --nature --regularize --target_type=aggressive_success1000 --method=aggressive
-#python3 /data_2/chenzhuo/adversarial_ranking_attack/adv_ir/run_collision.py --mode=train --nature --target=mini --amount=0 --target_type=none --method=natural_beam40_stemp001_lr02 --num_beams=40 --stemp=0.01 --lr=0.2 --beta=0.01 --seq_len=10
-#python3 /data_2/chenzhuo/adversarial_ranking_attack/adv_ir/run_collision.py --mode=test_ranking --target=mini_adv --amount=500 --regularize --target_type=none --method
