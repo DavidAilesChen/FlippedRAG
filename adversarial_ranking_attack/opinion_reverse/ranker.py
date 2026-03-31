@@ -152,13 +152,6 @@ def dense_dual_encoder_ranking(data,  model, tokenizer, max_seq_len, args, devic
         all_logits = []
         data_object = batching(tokenizer=tokenizer, examples=data, args=args)
         for batch_encoding_queries, batch_encoding_passages, tmp_labels, tmp_true_labels in data_object:
-            # outputs = condenser_encode(
-            #     model,
-            #     batch_encoding_queries,
-            #     batch_encoding_passages,
-            #     device,
-            #     args,
-            # )
             outputs, _ = dense_L2_retrieval(model, batch_encoding_queries, batch_encoding_passages, k=len(tmp_labels))
             logits = outputs[0].tolist()
             all_logits.extend(logits)
@@ -262,7 +255,6 @@ def eval_ranking(data,  model, tokenizer, max_seq_len, args, device, target_info
     print("#OTHER EVAL:")
     print("sorted_logits:", sorted_logits)
     print("sorted_vlabels:", sorted_label)
-    print("###")
     
     return sorted_index, sorted_label, sorted_data, sorted_true_label, sorted_logits
 
