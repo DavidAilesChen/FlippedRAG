@@ -1,1 +1,1 @@
-
+If you need adversarial triggers for other surrogate models, please contact the contributor.
