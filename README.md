@@ -165,3 +165,5 @@ We are able to attack the black-box RAG now. In **rag/rag_equipedwith_defense.py
     python rag/rag_equipedwith_defense.py
 
 We also use Qwen2.5-72b to classify the opinion in the RAG responses.
+
+If you have any question, feel free to contact the contributor. (chenzhuo432@whu.edu.cn)
