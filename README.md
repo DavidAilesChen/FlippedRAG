@@ -116,6 +116,10 @@ Since the MSMARCO dataset is excessively large, it is necessary to manually down
 
 The main data loading function for the MSMARCO dataset is **msmarco_run_bm25_load** located in rag/test_between_LLM_RM.py.
 
+DATA SOURCE:
+TRECDL_2019:https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019
+MSMARCO:https://microsoft.github.io/msmarco/
+
 ### Black-box Retriever Imitation
 In the following experiments, we use retrieval models such as Contriever and Qwen3-Embedding-4B as examples.
 
